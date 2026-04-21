@@ -1,8 +1,3 @@
 {
-  "name": "pathway-ministries-api",
-  "version": "1.0.0",
-  "description": "Pathway Ministries — Form Submission API",
-  "dependencies": {
-    "nodemailer": "^6.9.9"
-  }
+  "version": 2
 }
