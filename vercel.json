@@ -4,6 +4,15 @@
     { "src": "api/submit.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/submit", "dest": "/api/submit.js" }
+    {
+      "src": "/api/submit",
+      "methods": ["POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
+      "dest": "/api/submit.js"
+    }
   ]
 }
