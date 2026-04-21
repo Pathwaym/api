@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
-  // CORS — allow requests from GitHub Pages and pathwaym.co.za
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,7 +8,7 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { firstName, lastName, email, phone, suburb, referral, message } = req.body;
+  const { firstName, lastName, email, phone, suburb, referral, message, reasons } = req.body;
 
   if (!firstName || !lastName || !email) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -25,6 +24,10 @@ module.exports = async (req, res) => {
     },
   });
 
+  const reasonsList = reasons && reasons.length
+    ? reasons.map(r => `<li style="margin-bottom:4px;">${r}</li>`).join('')
+    : '<li>Not specified</li>';
+
   const adminHtml = `
     <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #1A1A1A;">
       <div style="background: #1A1A1A; padding: 28px 32px; text-align: center;">
@@ -34,11 +37,17 @@ module.exports = async (req, res) => {
       </div>
       <div style="background: #FAF7F2; padding: 32px; border: 1px solid #E8E0D0; border-top: none;">
         <table style="width:100%; border-collapse: collapse; font-size: 0.92rem;">
-          <tr><td style="padding: 8px 0; color: #8A7F74; width: 140px;">Full Name</td><td style="padding: 8px 0; font-weight: 500;">${firstName} ${lastName}</td></tr>
-          <tr><td style="padding: 8px 0; color: #8A7F74;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color:#C9A84C;">${email}</a></td></tr>
-          <tr><td style="padding: 8px 0; color: #8A7F74;">Phone</td><td style="padding: 8px 0;">${phone || '—'}</td></tr>
-          <tr><td style="padding: 8px 0; color: #8A7F74;">Area / Suburb</td><td style="padding: 8px 0;">${suburb || '—'}</td></tr>
-          <tr><td style="padding: 8px 0; color: #8A7F74;">Heard via</td><td style="padding: 8px 0;">${referral || '—'}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8A7F74; width: 140px; vertical-align:top;">Full Name</td><td style="padding: 8px 0; font-weight: 500;">${firstName} ${lastName}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8A7F74; vertical-align:top;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color:#C9A84C;">${email}</a></td></tr>
+          <tr><td style="padding: 8px 0; color: #8A7F74; vertical-align:top;">Phone</td><td style="padding: 8px 0;">${phone || '—'}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8A7F74; vertical-align:top;">Area / Suburb</td><td style="padding: 8px 0;">${suburb || '—'}</td></tr>
+          <tr><td style="padding: 8px 0; color: #8A7F74; vertical-align:top;">Heard via</td><td style="padding: 8px 0;">${referral || '—'}</td></tr>
+          <tr>
+            <td style="padding: 8px 0; color: #8A7F74; vertical-align:top;">Interested in</td>
+            <td style="padding: 8px 0;">
+              <ul style="margin:0; padding-left:16px; line-height:1.6;">${reasonsList}</ul>
+            </td>
+          </tr>
         </table>
         ${message ? `<div style="margin-top:20px; padding:16px; background:#fff; border-left: 3px solid #C9A84C;"><p style="margin:0; color:#8A7F74; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Prayer Request / Message</p><p style="margin:0; line-height:1.6;">${message}</p></div>` : ''}
       </div>
@@ -71,7 +80,7 @@ module.exports = async (req, res) => {
     await transporter.sendMail({
       from: `"Pathway Ministries" <${process.env.SMTP_USER}>`,
       to: process.env.SMTP_USER,
-      subject: `New Connection Form: ${firstName} ${lastName}`,
+      subject: `New Connection: ${firstName} ${lastName}`,
       html: adminHtml,
     });
 
